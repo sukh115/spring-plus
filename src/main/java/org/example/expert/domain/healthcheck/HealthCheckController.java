@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class HealthCheckController {
 
+    @GetMapping("/health")
     public ResponseEntity<String> health() {
         log.info("✅ Health check");
         return ResponseEntity.ok("OK");
