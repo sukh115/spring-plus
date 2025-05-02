@@ -8,16 +8,22 @@ import org.example.expert.domain.comment.entity.QComment;
 import org.example.expert.domain.manager.entity.QManager;
 import org.example.expert.domain.todo.dto.request.TodoSearchCondition;
 import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
+import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todoPartition.entity.QTodoPartitioned;
+import org.example.expert.domain.todoPartition.entity.TodoPartitioned;
 import org.example.expert.domain.user.entity.QUser;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.example.expert.domain.todo.entity.QTodo.todo;
+import static org.example.expert.domain.user.entity.QUser.user;
+
 @Repository
 @RequiredArgsConstructor
-public class TodoPartitionedQueryRepositoryImpl implements TodoPartitionedQueryRepository{
+public class TodoPartitionedQueryRepositoryImpl implements TodoPartitionedQueryRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -50,12 +56,34 @@ public class TodoPartitionedQueryRepositoryImpl implements TodoPartitionedQueryR
                 .fetch();
     }
 
+    @Override
+    public List<TodoPartitioned> findTodos(String title, String nickname, LocalDateTime start, LocalDateTime end, Pageable pageable) {
+        QTodoPartitioned todo = QTodoPartitioned.todoPartitioned;
+        QUser user = QUser.user;
+
+        return queryFactory
+                .selectFrom(todo)
+                .leftJoin(todo.user, user).fetchJoin()
+                .where(
+                        containsTitle(title),
+                        containsNickname(nickname),
+                        betweenCreatedAt(start, end)
+                )
+                .orderBy(todo.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+    }
+
+
+
+
     private BooleanExpression containsTitle(String title) {
         return title != null && !title.isBlank() ? QTodoPartitioned.todoPartitioned.title.contains(title) : null;
     }
 
     private BooleanExpression containsNickname(String nickname) {
-        return nickname != null && !nickname.isBlank() ? QUser.user.nickname.contains(nickname) : null;
+        return nickname != null && !nickname.isBlank() ? user.nickname.contains(nickname) : null;
     }
 
     private BooleanExpression betweenCreatedAt(LocalDateTime start, LocalDateTime end) {
@@ -68,5 +96,4 @@ public class TodoPartitionedQueryRepositoryImpl implements TodoPartitionedQueryR
         }
         return null;
     }
-
 }
