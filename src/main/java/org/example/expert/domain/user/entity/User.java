@@ -1,6 +1,8 @@
 package org.example.expert.domain.user.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.expert.domain.common.dto.AuthUser;
@@ -10,6 +12,8 @@ import org.example.expert.domain.user.enums.UserRole;
 @Getter
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "users")
 public class User extends Timestamped {
 
@@ -18,6 +22,7 @@ public class User extends Timestamped {
     @Column(unique = true)
     private String email;
     private String password;
+    @Column(unique = true)
     private String nickname;
     private String profileImageUrl;
     @Enumerated(EnumType.STRING)

@@ -5,12 +5,13 @@ import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.s3.S3Uploader;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
 import org.example.expert.domain.user.dto.response.UserResponse;
-import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,6 +45,11 @@ public class UserController {
     public ResponseEntity<Void> deleteProfileImage(@AuthenticationPrincipal AuthUser authUser) {
         userService.deleteProfileImage(authUser.getId());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users/list")
+    public ResponseEntity<List<UserResponse>> getUsersByNickName(@RequestParam String nickname) {
+        return ResponseEntity.ok(userService.findUsersByNickname(nickname));
     }
 
 }

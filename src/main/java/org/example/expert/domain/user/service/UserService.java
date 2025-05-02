@@ -9,6 +9,7 @@ import org.example.expert.domain.s3.S3Uploader;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
+import org.example.expert.domain.user.repository.UserQueryRepository;
 import org.example.expert.domain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +38,7 @@ public class UserService {
 
     public UserResponse getUser(long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new InvalidRequestException("User not found"));
-        return new UserResponse(user.getId(), user.getEmail());
+        return new UserResponse(user.getId(), user.getEmail(), user.getNickname());
     }
 
     @Transactional
@@ -81,6 +84,10 @@ public class UserService {
             s3Uploader.deleteProfileImage(userId, key);
             user.updateProfileImage(null); // DB에서도 제거
         }
+    }
+
+    public List<UserResponse> findUsersByNickname(String nickname) {
+        return userRepository.findUserByNickname(nickname);
     }
 
 }
