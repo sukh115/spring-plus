@@ -1,5 +1,7 @@
 package org.example.expert.domain.user.service;
 
+import io.jsonwebtoken.io.IOException;
+import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
@@ -9,6 +11,7 @@ import org.example.expert.domain.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -48,4 +51,13 @@ public class UserService {
             throw new InvalidRequestException("새 비밀번호는 8자 이상이어야 하고, 숫자와 대문자를 포함해야 합니다.");
         }
     }
+
+    @Transactional
+    public void updateProfileImage(Long userId, String key) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidRequestException("USER_NOT_FOUND"));
+        user.updateProfileImage(key);
+    }
+
+
 }
