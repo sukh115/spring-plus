@@ -5,6 +5,7 @@ import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.s3.S3Uploader;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
 import org.example.expert.domain.user.dto.response.UserResponse;
+import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -37,6 +38,12 @@ public class UserController {
         userService.updateProfileImage(authUser.getId(), key);
         String imageUrl = s3Uploader.getFileUrl(key);
         return ResponseEntity.ok(imageUrl);
+    }
+
+    @DeleteMapping("/users/profile-image")
+    public ResponseEntity<Void> deleteProfileImage(@AuthenticationPrincipal AuthUser authUser) {
+        userService.deleteProfileImage(authUser.getId());
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -1,12 +1,15 @@
 package org.example.expert.domain.s3;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,6 +18,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class S3Uploader {
 
     private static final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/gif", "image/webp");
@@ -48,6 +52,23 @@ public class S3Uploader {
         }
     }
 
+    public void deleteProfileImage(Long userId, String key) {
+        if (key == null || key.isBlank()) return;
+
+        try {
+            DeleteObjectRequest request = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(request);
+        } catch (S3Exception e) {
+            log.error("❌ S3 삭제 실패: {}", e.awsErrorDetails().errorMessage());
+        }
+    }
+
+
+
     private String extractExtension(MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || !originalFilename.contains(".")) {
@@ -67,4 +88,6 @@ public class S3Uploader {
                 builder.bucket(bucketName).key(key)
         ).toExternalForm();
     }
+
+
 }

@@ -3,23 +3,35 @@ package org.example.expert.domain.user.service;
 import io.jsonwebtoken.io.IOException;
 import jdk.jshell.spi.ExecutionControl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.expert.domain.common.exception.InvalidRequestException;
+import org.example.expert.domain.s3.S3Uploader;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final S3Client s3Client;
+    private final S3Uploader s3Uploader;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
 
     public UserResponse getUser(long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new InvalidRequestException("User not found"));
@@ -59,5 +71,16 @@ public class UserService {
         user.updateProfileImage(key);
     }
 
+    @Transactional
+    public void deleteProfileImage(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidRequestException("USER_NOT_FOUND"));
+
+        String key = user.getProfileImageUrl();
+        if (key != null && !key.isBlank()) {
+            s3Uploader.deleteProfileImage(userId, key);
+            user.updateProfileImage(null); // DB에서도 제거
+        }
+    }
 
 }
