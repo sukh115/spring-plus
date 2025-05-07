@@ -1,8 +1,5 @@
-package org.example.expert.domain.manager.repository;
+package org.example.expert.domain.manager.repository
 
-import java.util.List;
-import java.util.Map;
-
-public interface ManagerQueryRepository {
-    public Map<Long, Long> countManagersByTodoIds(List<Long> todoIds);
+interface ManagerQueryRepository {
+    fun countManagersByTodoIds(todoIds: List<Long>): Map<Long, Long>
 }

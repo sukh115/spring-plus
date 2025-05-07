@@ -1,55 +1,50 @@
-package org.example.expert.domain.user.controller;
+package org.example.expert.domain.user.controller
 
-import lombok.RequiredArgsConstructor;
-import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.s3.S3Uploader;
-import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
-import org.example.expert.domain.user.dto.response.UserResponse;
-import org.example.expert.domain.user.service.UserService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
+import lombok.RequiredArgsConstructor
+import org.example.expert.domain.common.dto.AuthUser
+import org.example.expert.domain.s3.S3Uploader
+import org.example.expert.domain.user.dto.request.UserChangePasswordRequest
+import org.example.expert.domain.user.dto.response.UserResponse
+import org.example.expert.domain.user.service.UserService
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@RequiredArgsConstructor
-public class UserController {
-
-    private final UserService userService;
-    private final S3Uploader s3Uploader;
-
+class UserController(
+    private val userService: UserService,
+    private val s3Uploader: S3Uploader
+) {
     @GetMapping("/users/{userId}")
-    public ResponseEntity<UserResponse> getUser(@PathVariable long userId) {
-        return ResponseEntity.ok(userService.getUser(userId));
+    fun getUser(@PathVariable userId: Long): ResponseEntity<UserResponse> {
+        return ResponseEntity.ok(userService.getUser(userId))
     }
 
     @PutMapping("/users")
-    public void changePassword(AuthUser authUser, @RequestBody UserChangePasswordRequest userChangePasswordRequest) {
-        userService.changePassword(authUser.getId(), userChangePasswordRequest);
+    fun changePassword(authUser: AuthUser, @RequestBody userChangePasswordRequest: UserChangePasswordRequest) {
+        userService.changePassword(authUser.id, userChangePasswordRequest)
     }
 
     @PostMapping("/users/profile-image")
-    public ResponseEntity<String> uploadProfileImage(
-            @AuthenticationPrincipal AuthUser authUser,
-            @RequestPart("file") MultipartFile file
-    ) {
-        String key = s3Uploader.uploadFile(file, "profile-images");
-        userService.updateProfileImage(authUser.getId(), key);
-        String imageUrl = s3Uploader.getFileUrl(key);
-        return ResponseEntity.ok(imageUrl);
+    fun uploadProfileImage(
+        @AuthenticationPrincipal authUser: AuthUser,
+        @RequestPart("file") file: MultipartFile
+    ): ResponseEntity<String> {
+        val key = s3Uploader.uploadFile(file, "profile-images")
+        userService.updateProfileImage(authUser.id, key)
+        val imageUrl = s3Uploader.getFileUrl(key)
+        return ResponseEntity.ok(imageUrl)
     }
 
     @DeleteMapping("/users/profile-image")
-    public ResponseEntity<Void> deleteProfileImage(@AuthenticationPrincipal AuthUser authUser) {
-        userService.deleteProfileImage(authUser.getId());
-        return ResponseEntity.noContent().build();
+    fun deleteProfileImage(@AuthenticationPrincipal authUser: AuthUser): ResponseEntity<Void> {
+        userService.deleteProfileImage(authUser.id)
+        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/users/list")
-    public ResponseEntity<List<UserResponse>> getUsersByNickName(@RequestParam String nickname) {
-        return ResponseEntity.ok(userService.findUsersByNickname(nickname));
+    fun getUsersByNickName(@RequestParam nickname: String): ResponseEntity<List<UserResponse>> {
+        return ResponseEntity.ok(userService.findUsersByNickname(nickname))
     }
-
 }

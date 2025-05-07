@@ -1,33 +1,31 @@
-package org.example.expert.domain.manager.repository;
+package org.example.expert.domain.manager.repository
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.example.expert.domain.manager.entity.QManager.manager;
+import com.querydsl.core.Tuple
+import com.querydsl.jpa.impl.JPAQueryFactory
+import org.example.expert.domain.manager.entity.QManager
+import org.springframework.stereotype.Repository
+import java.util.function.Function
+import java.util.stream.Collectors
 
 @Repository
-@RequiredArgsConstructor
-public class ManagerQueryRepositoryImpl implements ManagerQueryRepository{
+class ManagerQueryRepositoryImpl(
+    private val queryFactory: JPAQueryFactory
+) : ManagerQueryRepository {
 
-    private final JPAQueryFactory queryFactory;
+    override fun countManagersByTodoIds(todoIds: List<Long>): Map<Long, Long> {
+        if (todoIds.isEmpty()) return emptyMap()
 
-    public Map<Long, Long> countManagersByTodoIds(List<Long> todoIds) {
+        val manager = QManager.manager
+
         return queryFactory
-                .select(manager.todo.id, manager.id.countDistinct())
-                .from(manager)
-                .where(manager.todo.id.in(todoIds))
-                .groupBy(manager.todo.id)
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(
-                        tuple -> tuple.get(0, Long.class),
-                        tuple -> tuple.get(1, Long.class)
-                ));
+            .select(manager.todo.id, manager.id.countDistinct())
+            .from(manager)
+            .where(manager.todo.id.`in`(todoIds))
+            .groupBy(manager.todo.id)
+            .fetch()
+            .associate { tuple ->
+                tuple[manager.todo.id]!! to tuple[manager.id.countDistinct()]!!
+            }
     }
 
 }

@@ -1,7 +1,6 @@
-package org.example.expert.domain.todoPartition.repository;
+package org.example.expert.domain.todoPartition.repository
 
-import org.example.expert.domain.todoPartition.entity.TodoPartitioned;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.example.expert.domain.todoPartition.entity.TodoPartitioned
+import org.springframework.data.jpa.repository.JpaRepository
 
-public interface TodoPartitionedRepository extends JpaRepository<TodoPartitioned, Long>, TodoPartitionedQueryRepository {
-}
+interface TodoPartitionedRepository : JpaRepository<TodoPartitioned, Long>, TodoPartitionedQueryRepository

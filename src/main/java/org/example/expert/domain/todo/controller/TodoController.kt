@@ -1,54 +1,50 @@
-package org.example.expert.domain.todo.controller;
+package org.example.expert.domain.todo.controller
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
-import org.example.expert.domain.todo.dto.request.TodoSearchCondition;
-import org.example.expert.domain.todo.dto.response.TodoResponse;
-import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
-import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
-import org.example.expert.domain.todo.service.TodoService;
-import org.springframework.data.domain.Page;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
+import jakarta.validation.Valid
+import org.example.expert.domain.common.dto.AuthUser
+import org.example.expert.domain.todo.dto.request.TodoSaveRequest
+import org.example.expert.domain.todo.dto.request.TodoSearchCondition
+import org.example.expert.domain.todo.dto.response.TodoResponse
+import org.example.expert.domain.todo.dto.response.TodoSaveResponse
+import org.example.expert.domain.todo.dto.response.TodoSearchResponse
+import org.example.expert.domain.todo.service.TodoService
+import org.springframework.data.domain.Page
+import org.springframework.format.annotation.DateTimeFormat
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
 
 @RestController
-@RequiredArgsConstructor
-public class TodoController {
-
-    private final TodoService todoService;
-
+class TodoController(
+    private val todoService: TodoService
+) {
     @PostMapping("/todos")
-    public ResponseEntity<TodoSaveResponse> saveTodo(
-            @AuthenticationPrincipal AuthUser authUser,
-            @Valid @RequestBody TodoSaveRequest todoSaveRequest
-    ) {
-        return ResponseEntity.ok(todoService.saveTodo(authUser, todoSaveRequest));
+    fun saveTodo(
+        @AuthenticationPrincipal authUser: AuthUser,
+        @RequestBody todoSaveRequest: @Valid TodoSaveRequest
+    ): ResponseEntity<TodoSaveResponse> {
+        return ResponseEntity.ok(todoService.saveTodo(authUser, todoSaveRequest))
     }
 
     @GetMapping("/todos")
-    public ResponseEntity<Page<TodoResponse>> getTodos(
-            @RequestParam(required = false) String weather,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        return ResponseEntity.ok(todoService.getTodos(weather, start, end, page, size));
+    fun getTodos(
+        @RequestParam(required = false) weather: String?,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) start: LocalDateTime?,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) end: LocalDateTime?,
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int
+    ): ResponseEntity<Page<TodoResponse>> {
+        return ResponseEntity.ok(todoService.getTodos(weather, start, end, page, size))
     }
 
     @GetMapping("/todos/{todoId}")
-    public ResponseEntity<TodoResponse> getTodo(@PathVariable long todoId) {
-        return ResponseEntity.ok(todoService.getTodo(todoId));
+    fun getTodo(@PathVariable todoId: Long): ResponseEntity<TodoResponse> {
+        return ResponseEntity.ok(todoService.getTodo(todoId))
     }
 
     @GetMapping("/todos/search")
-    public ResponseEntity<Page<TodoSearchResponse>> searchTodo(@ModelAttribute TodoSearchCondition todoSearchCondition) {
-        return ResponseEntity.ok(todoService.searchTodos(todoSearchCondition));
+    fun searchTodo(@ModelAttribute todoSearchCondition: TodoSearchCondition): ResponseEntity<Page<TodoSearchResponse>> {
+        return ResponseEntity.ok(todoService.searchTodos(todoSearchCondition))
     }
 }

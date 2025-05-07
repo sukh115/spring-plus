@@ -1,25 +1,18 @@
-package org.example.expert.domain.todo.dto.request;
+package org.example.expert.domain.todo.dto.request
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
+data class TodoSearchCondition(
+    val title: String,
+    val nickname: String,
 
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class TodoSearchCondition {
-    private String title;
-    private String nickname;
+    @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    val startDate: LocalDateTime,
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime startDate;
+    @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    val endDate: LocalDateTime,
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime endDate;
-
-    private int page = 1;
-    private int size = 10;
-}
+    val page: Int = 1,
+    val size: Int = 10
+)

@@ -1,5 +1,9 @@
 plugins {
     id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '2.0.0'
+    id 'org.jetbrains.kotlin.plugin.spring' version '2.0.0'
+    id 'org.jetbrains.kotlin.plugin.jpa' version '2.0.0'
+    id 'org.jetbrains.kotlin.kapt' version '2.0.0'
     id 'org.springframework.boot' version '3.3.3'
     id 'io.spring.dependency-management' version '1.1.6'
 }
@@ -11,6 +15,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+kapt {
+    keepJavacAnnotationProcessors = true
 }
 
 configurations {
@@ -48,36 +56,46 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    // QueryDSL
-    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
-    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
-    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
-    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+
+    // QueryDSL (Kotlin + kapt)
+    implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
+    kapt "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    kapt "jakarta.annotation:jakarta.annotation-api"
+    kapt "jakarta.persistence:jakarta.persistence-api"
 
     // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // AWS SDK
-    implementation platform("software.amazon.awssdk:bom:2.25.13") // 최신 BOM
+    implementation platform("software.amazon.awssdk:bom:2.25.13")
     implementation "software.amazon.awssdk:s3"
-
 }
-
-def querydslDir = "build/generated/sources/annotationProcessor/java/main"
 
 sourceSets {
-    main.java.srcDirs += querydslDir
+    main {
+        java {
+            srcDirs += "build/generated/sources/kapt/main"
+        }
+    }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.generatedSourceOutputDirectory = file(querydslDir)
-    options.annotationProcessorPath = configurations.annotationProcessor
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xjsr305=strict"]
+        jvmTarget = "17"
+    }
 }
-
-
-compileJava.dependsOn('clean') // 캐시 문제 방지
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
 }

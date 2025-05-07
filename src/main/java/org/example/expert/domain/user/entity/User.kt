@@ -1,61 +1,60 @@
-package org.example.expert.domain.user.entity;
+package org.example.expert.domain.user.entity
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.common.entity.Timestamped;
-import org.example.expert.domain.user.enums.UserRole;
+import jakarta.persistence.*
+import org.example.expert.domain.common.dto.AuthUser
+import org.example.expert.domain.common.entity.Timestamped
+import org.example.expert.domain.user.enums.UserRole
 
-@Getter
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Table(name = "users")
-public class User extends Timestamped {
+class User protected constructor(
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null,
+
     @Column(unique = true)
-    private String email;
-    private String password;
+    var email: String,
+
+    var password: String,
+
     @Column(unique = true)
-    private String nickname;
-    private String profileImageUrl;
+    var nickname: String,
+
+    var profileImageUrl: String? = null,
+
     @Enumerated(EnumType.STRING)
-    private UserRole userRole;
+    var userRole: UserRole
 
-    public User(String email, String password, String nickname, UserRole userRole) {
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
-        this.userRole = userRole;
+) : Timestamped() {
+    constructor() : this(
+        email = "",
+        password = "",
+        nickname = "",
+        userRole = UserRole.USER
+    )
+
+    fun updateProfileImage(imageUrl: String?) {
+        this.profileImageUrl = imageUrl
     }
 
-    private User(Long id, String email, String nickname, UserRole userRole) {
-        this.id = id;
-        this.email = email;
-        this.nickname = nickname;
-        this.userRole = userRole;
+    fun changePassword(newPassword: String) {
+        this.password = newPassword
     }
 
-    public void updateProfileImage(String imageUrl) {
-        this.profileImageUrl = imageUrl;
+    fun updateRole(newRole: UserRole) {
+        this.userRole = newRole
     }
 
-
-    public static User fromAuthUser(AuthUser authUser) {
-        return new User(authUser.getId(), authUser.getEmail(), authUser.getNickname(), authUser.getUserRole());
-    }
-
-    public void changePassword(String password) {
-        this.password = password;
-    }
-
-    public void updateRole(UserRole userRole) {
-        this.userRole = userRole;
+    companion object {
+        fun fromAuthUser(authUser: AuthUser): User {
+            return User(
+                id = authUser.id,
+                email = authUser.email,
+                nickname = authUser.nickname,
+                userRole = authUser.userRole,
+                password = "unknown" // 기본 비밀번호 (보안상 무의미 처리)
+            )
+        }
     }
 }

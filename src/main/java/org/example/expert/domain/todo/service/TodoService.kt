@@ -1,95 +1,90 @@
-package org.example.expert.domain.todo.service;
+package org.example.expert.domain.todo.service
 
-import lombok.RequiredArgsConstructor;
-import org.example.expert.client.WeatherClient;
-import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.common.exception.InvalidRequestException;
-import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
-import org.example.expert.domain.todo.dto.request.TodoSearchCondition;
-import org.example.expert.domain.todo.dto.response.TodoResponse;
-import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
-import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
-import org.example.expert.domain.todo.entity.Todo;
-import org.example.expert.domain.todo.repository.TodoRepository;
-import org.example.expert.domain.user.dto.response.UserResponse;
-import org.example.expert.domain.user.entity.User;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import org.example.expert.client.WeatherClient
+import org.example.expert.domain.common.dto.AuthUser
+import org.example.expert.domain.common.exception.InvalidRequestException
+import org.example.expert.domain.todo.dto.request.TodoSaveRequest
+import org.example.expert.domain.todo.dto.request.TodoSearchCondition
+import org.example.expert.domain.todo.dto.response.TodoResponse
+import org.example.expert.domain.todo.dto.response.TodoSaveResponse
+import org.example.expert.domain.todo.dto.response.TodoSearchResponse
+import org.example.expert.domain.todo.entity.Todo
+import org.example.expert.domain.todo.repository.TodoRepository
+import org.example.expert.domain.user.dto.response.UserResponse
+import org.example.expert.domain.user.entity.User
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class TodoService {
-
-    private final TodoRepository todoRepository;
-    private final WeatherClient weatherClient;
-
+class TodoService(
+    private val todoRepository: TodoRepository,
+    private val weatherClient: WeatherClient
+) {
     @Transactional
-    public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
-        User user = User.fromAuthUser(authUser);
+    fun saveTodo(authUser: AuthUser, todoSaveRequest: TodoSaveRequest): TodoSaveResponse {
+        val user = User.fromAuthUser(authUser)
 
-        String weather = weatherClient.getTodayWeather();
+        val weather = weatherClient.todayWeather
 
-        Todo newTodo = new Todo(
-                todoSaveRequest.getTitle(),
-                todoSaveRequest.getContents(),
-                weather,
-                user
-        );
-        Todo savedTodo = todoRepository.save(newTodo);
+        val newTodo = Todo(todoSaveRequest.title, todoSaveRequest.contents, weather, user)
+        val savedTodo = todoRepository.save(newTodo)
 
-        return new TodoSaveResponse(
-                savedTodo.getId(),
-                savedTodo.getTitle(),
-                savedTodo.getContents(),
-                weather,
-                new UserResponse(user.getId(), user.getEmail(), user.getNickname())
-        );
+        return TodoSaveResponse(
+            savedTodo.id!!,
+            savedTodo.title,
+            savedTodo.contents,
+            weather,
+            UserResponse(user.id!!, user.email, user.nickname)
+        )
     }
 
-    public Page<TodoResponse> getTodos(String weather, LocalDateTime start, LocalDateTime end, int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+    fun getTodos(
+        weather: String?,
+        start: LocalDateTime?,
+        end: LocalDateTime?,
+        page: Int,
+        size: Int
+    ): Page<TodoResponse> {
+        val pageable: Pageable = PageRequest.of(page - 1, size)
 
-        Page<Todo> todos = todoRepository.searchByWeatherAndDateRange(weather, start, end, pageable);
+        val todos = todoRepository.searchByWeatherAndDateRange(weather, start, end, pageable)
 
-        return todos.map(todo -> new TodoResponse(
-                todo.getId(),
-                todo.getTitle(),
-                todo.getContents(),
-                todo.getWeather(),
-                new UserResponse(todo.getUser().getId(), todo.getUser().getEmail(),todo.getUser().getNickname()),
-                todo.getCreatedAt(),
-                todo.getModifiedAt()
-        ));
+        return todos.map { todo: Todo ->
+            TodoResponse(
+                todo.id!!,
+                todo.title,
+                todo.contents,
+                todo.weather,
+                UserResponse(todo.user.id!!, todo.user.email, todo.user.nickname),
+                todo.createdAt,
+                todo.modifiedAt
+            )
+        }
     }
 
-    public TodoResponse getTodo(long todoId) {
-        Todo todo = todoRepository.findByIdWithUser(todoId)
-                .orElseThrow(() -> new InvalidRequestException("Todo not found"));
+    fun getTodo(todoId: Long): TodoResponse {
+        val todo: Todo = todoRepository.findByIdWithUser(todoId)
+            ?: throw InvalidRequestException("Todo not found")
 
-        User user = todo.getUser();
+        val user = todo.user
 
-        return new TodoResponse(
-                todo.getId(),
-                todo.getTitle(),
-                todo.getContents(),
-                todo.getWeather(),
-                new UserResponse(user.getId(), user.getEmail(), user.getNickname()),
-                todo.getCreatedAt(),
-                todo.getModifiedAt()
-        );
+        return TodoResponse(
+            todo.id!!,
+            todo.title,
+            todo.contents,
+            todo.weather,
+            UserResponse(user.id!!, user.email, user.nickname),
+            todo.createdAt,
+            todo.modifiedAt
+        )
     }
 
-    public Page<TodoSearchResponse> searchTodos(TodoSearchCondition todoSearchCondition) {
-        return todoRepository.search(todoSearchCondition);
+    fun searchTodos(todoSearchCondition: TodoSearchCondition): Page<TodoSearchResponse> {
+        return todoRepository.search(todoSearchCondition)
     }
-
-
 }

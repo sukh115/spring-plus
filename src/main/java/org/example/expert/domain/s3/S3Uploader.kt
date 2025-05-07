@@ -1,92 +1,88 @@
-package org.example.expert.domain.s3;
+package org.example.expert.domain.s3
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
-
+import lombok.RequiredArgsConstructor
+import lombok.extern.slf4j.Slf4j
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
+import org.springframework.web.multipart.MultipartFile
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
+import software.amazon.awssdk.services.s3.model.GetUrlRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.S3Exception
+import java.io.IOException
+import java.util.*
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
-public class S3Uploader {
+class S3Uploader (
+    private val s3Client: S3Client)
+{
 
-    private static final List<String> ALLOWED_TYPES = List.of("image/jpeg", "image/png", "image/gif", "image/webp");
-    private static final List<String> ALLOWED_EXTENSIONS = List.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
-    private final S3Client s3Client;
+    companion object {
+        private val ALLOWED_TYPES = listOf("image/jpeg", "image/png", "image/gif", "image/webp")
+        private val ALLOWED_EXTENSIONS = listOf(".jpg", ".jpeg", ".png", ".gif", ".webp")
+    }
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucketName;
+    @Value("\${cloud.aws.s3.bucket}")
+    private lateinit var bucketName: String
 
-    public String uploadFile(MultipartFile file, String dir) {
-        String contentType = file.getContentType();
+    fun uploadFile(file: MultipartFile, dir: String): String {
+        val contentType = file.contentType
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
-            throw new IllegalArgumentException("허용되지 않는 이미지 형식입니다.");
+            throw IllegalArgumentException("허용되지 않는 이미지 형식입니다.")
         }
-
-        String extension = extractExtension(file);
-        String key = dir + "/" + UUID.randomUUID() + extension;
+        val extension = extractExtension(file)
+        val key = dir + "/" + UUID.randomUUID() + extension
 
         try {
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .contentType(contentType)
-                    .build();
+            val putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(contentType)
+                .build()
 
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-            return key;
-
-        } catch (IOException e) {
-            throw new RuntimeException("파일 업로드 실패", e);
+            s3Client?.putObject(putObjectRequest, RequestBody.fromInputStream(file.inputStream, file.size))
+            return key
+        } catch (e: IOException) {
+            throw RuntimeException("파일 업로드 실패", e)
         }
     }
 
-    public void deleteProfileImage(Long userId, String key) {
-        if (key == null || key.isBlank()) return;
+    fun deleteProfileImage(userId: Long, key: String?) {
+        if (key.isNullOrBlank()) return
 
         try {
-            DeleteObjectRequest request = DeleteObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .build();
+            val request = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build()
 
-            s3Client.deleteObject(request);
-        } catch (S3Exception e) {
-            log.error("❌ S3 삭제 실패: {}", e.awsErrorDetails().errorMessage());
+            s3Client.deleteObject(request)
+        } catch (e: S3Exception) {
+            println("S3 삭제 실패: ${e.awsErrorDetails().errorMessage()}")
         }
     }
 
 
-
-    private String extractExtension(MultipartFile file) {
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null || !originalFilename.contains(".")) {
-            throw new IllegalArgumentException("파일 이름이 유효하지 않습니다.");
+    private fun extractExtension(file: MultipartFile): String {
+        val originalFilename = file.originalFilename
+        if (originalFilename.isNullOrBlank() || !originalFilename.contains(".")) {
+            throw IllegalArgumentException("파일 이름이 유효하지 않습니다.")
         }
 
-        String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+        val extension = originalFilename.substringAfterLast(".", "").let { ".$it".lowercase() }
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("이미지 확장자만 업로드할 수 있습니다.");
+            throw IllegalArgumentException("이미지 확장자만 업로드할 수 있습니다.")
         }
 
-        return extension;
+        return extension
     }
 
-    public String getFileUrl(String key) {
-        return s3Client.utilities().getUrl(builder ->
-                builder.bucket(bucketName).key(key)
-        ).toExternalForm();
+    fun getFileUrl(key: String): String {
+        return s3Client.utilities()
+            .getUrl { it.bucket(bucketName).key(key) }
+            .toExternalForm()
     }
 
 

@@ -1,39 +1,29 @@
-package org.example.expert.domain.todoPartition.entity;
+package org.example.expert.domain.todoPartition.entity
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.example.expert.domain.comment.entity.Comment;
-import org.example.expert.domain.common.entity.Timestamped;
-import org.example.expert.domain.manager.entity.Manager;
-import org.example.expert.domain.user.entity.User;
-
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*
+import org.example.expert.domain.common.entity.Timestamped
+import org.example.expert.domain.user.entity.User
 
 @Entity
 @Table(name = "todos_partitioned")
-@Getter
-@NoArgsConstructor
-public class TodoPartitioned extends Timestamped {
-
+class TodoPartitioned(
     @Id
-    private Long id;
+    var id: Long,
+    var title: String,
+    var contents: String,
+    var weather: String,
 
-    private String title;
-    private String contents;
-    private String weather;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    var user: User
+) : Timestamped() {
 
-    // 생성자
-    public TodoPartitioned(Long id, String title, String contents, String weather, User user) {
-        this.id = id;
-        this.title = title;
-        this.contents = contents;
-        this.weather = weather;
-        this.user = user;
-    }
+    protected constructor() : this(
+        0L,
+        "",
+        "",
+        "",
+        User()
+    )
 }
+
