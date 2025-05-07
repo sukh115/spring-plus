@@ -1,33 +1,26 @@
-package org.example.expert.domain.comment.repository;
+package org.example.expert.domain.comment.repository
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
-import static org.example.expert.domain.comment.entity.QComment.comment;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.querydsl.jpa.impl.JPAQueryFactory
+import org.example.expert.domain.comment.entity.QComment
+import org.springframework.stereotype.Repository
 
 @Repository
-@RequiredArgsConstructor
-public class CommentQueryRepositoryImpl implements CommentQueryRepository {
+class CommentQueryRepositoryImpl(
+    private val queryFactory: JPAQueryFactory
+) : CommentQueryRepository {
+    override fun countCommentsByTodoIds(todoIds: List<Long>): Map<Long, Long> {
+        val comment = QComment.comment
 
-    private final JPAQueryFactory queryFactory;
-
-    public Map<Long, Long> countCommentsByTodoIds(List<Long> todoIds) {
         return queryFactory
-                .select(comment.todo.id, comment.id.countDistinct())
-                .from(comment)
-                .where(comment.todo.id.in(todoIds))
-                .groupBy(comment.todo.id)
-                .fetch()
-                .stream()
-                .collect(Collectors.toMap(
-                        tuple -> tuple.get(0, Long.class),
-                        tuple -> tuple.get(1, Long.class)
-                ));
+            .select(comment.todo.id, comment.id.countDistinct())
+            .from(comment)
+            .where(comment.todo.id.`in`(todoIds))
+            .groupBy(comment.todo.id)
+            .fetch()
+            .associate { tuple ->
+                val todoId = tuple.get(comment.todo.id)!!
+                val count = tuple.get(comment.id.countDistinct())!!
+                todoId to count
+            }
     }
-
 }

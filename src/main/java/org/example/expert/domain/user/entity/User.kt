@@ -33,6 +33,20 @@ class User protected constructor(
         nickname = "",
         userRole = UserRole.USER
     )
+    constructor(
+        email: String,
+        password: String,
+        nickname: String,
+        userRole: UserRole
+    ) : this(
+        id = null,
+        email = email,
+        password = password,
+        nickname = nickname,
+        profileImageUrl = null,
+        userRole = userRole
+    )
+
 
     fun updateProfileImage(imageUrl: String?) {
         this.profileImageUrl = imageUrl

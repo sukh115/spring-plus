@@ -61,8 +61,8 @@ class TodoService(
                 todo.contents,
                 todo.weather,
                 UserResponse(todo.user.id!!, todo.user.email, todo.user.nickname),
-                todo.createdAt,
-                todo.modifiedAt
+                todo.createdAt!!,
+                todo.modifiedAt!!
             )
         }
     }
@@ -79,8 +79,8 @@ class TodoService(
             todo.contents,
             todo.weather,
             UserResponse(user.id!!, user.email, user.nickname),
-            todo.createdAt,
-            todo.modifiedAt
+            todo.createdAt!!,
+            todo.modifiedAt!!
         )
     }
 

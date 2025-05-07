@@ -2,7 +2,7 @@ package org.example.expert.domain.manager.dto.request
 
 import jakarta.validation.constraints.NotNull
 
-class ManagerSaveRequest(
+data class ManagerSaveRequest(
     @field:NotNull
     val managerUserId: Long // 일정 작상자가 배치하는 유저 id
 )

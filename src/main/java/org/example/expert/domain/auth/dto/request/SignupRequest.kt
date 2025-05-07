@@ -1,22 +1,20 @@
-package org.example.expert.domain.auth.dto.request;
+package org.example.expert.domain.auth.dto.request
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotBlank
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class SignupRequest {
+data class SignupRequest(
 
-    @NotBlank @Email
-    private String email;
-    @NotBlank
-    private String password;
-    @NotBlank
-    private String nickname;
-    @NotBlank
-    private String userRole;
-}
+    @field:NotBlank @field:Email
+    val email: String,
+
+    @field:NotBlank
+    val password: String,
+
+    @field:NotBlank
+    val nickname: String,
+
+    @field:NotBlank
+    val userRole: String
+
+)

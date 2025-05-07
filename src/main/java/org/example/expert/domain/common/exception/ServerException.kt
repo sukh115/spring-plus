@@ -1,8 +1,3 @@
-package org.example.expert.domain.common.exception;
+package org.example.expert.domain.common.exception
 
-public class ServerException extends RuntimeException {
-
-    public ServerException(String message) {
-        super(message);
-    }
-}
+class ServerException(message: String?) : RuntimeException(message)

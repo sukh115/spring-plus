@@ -1,33 +1,25 @@
-package org.example.expert.domain.comment.entity;
+package org.example.expert.domain.comment.entity
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.example.expert.domain.common.entity.Timestamped;
-import org.example.expert.domain.todo.entity.Todo;
-import org.example.expert.domain.user.entity.User;
+import jakarta.persistence.*
+import org.example.expert.domain.common.entity.Timestamped
+import org.example.expert.domain.todo.entity.Todo
+import org.example.expert.domain.user.entity.User
 
-@Getter
 @Entity
-@NoArgsConstructor
 @Table(name = "comments")
-public class Comment extends Timestamped {
-
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String contents;
+class Comment(
+    var contents: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    var user: User,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "todo_id", nullable = false)
-    private Todo todo;
-
-    public Comment(String contents, User user, Todo todo) {
-        this.contents = contents;
-        this.user = user;
-        this.todo = todo;
-    }
+    var todo: Todo
+) :
+    Timestamped() {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long? = null
 }

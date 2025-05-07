@@ -1,65 +1,60 @@
-package org.example.expert.domain.comment.service;
+package org.example.expert.domain.comment.service
 
-import lombok.RequiredArgsConstructor;
-import org.example.expert.domain.comment.dto.request.CommentSaveRequest;
-import org.example.expert.domain.comment.dto.response.CommentResponse;
-import org.example.expert.domain.comment.dto.response.CommentSaveResponse;
-import org.example.expert.domain.comment.entity.Comment;
-import org.example.expert.domain.comment.repository.CommentRepository;
-import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.common.exception.InvalidRequestException;
-import org.example.expert.domain.todo.entity.Todo;
-import org.example.expert.domain.todo.repository.TodoRepository;
-import org.example.expert.domain.user.dto.response.UserResponse;
-import org.example.expert.domain.user.entity.User;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.RequiredArgsConstructor
+import org.example.expert.domain.comment.dto.request.CommentSaveRequest
+import org.example.expert.domain.comment.dto.response.CommentResponse
+import org.example.expert.domain.comment.dto.response.CommentSaveResponse
+import org.example.expert.domain.comment.entity.Comment
+import org.example.expert.domain.comment.repository.CommentRepository
+import org.example.expert.domain.common.dto.AuthUser
+import org.example.expert.domain.common.exception.InvalidRequestException
+import org.example.expert.domain.todo.repository.TodoRepository
+import org.example.expert.domain.user.dto.response.UserResponse
+import org.example.expert.domain.user.entity.User
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class CommentService {
-
-    private final TodoRepository todoRepository;
-    private final CommentRepository commentRepository;
-
+class CommentService (
+    val todoRepository: TodoRepository,
+    val commentRepository: CommentRepository
+) {
     @Transactional
-    public CommentSaveResponse saveComment(AuthUser authUser, long todoId, CommentSaveRequest commentSaveRequest) {
-        User user = User.fromAuthUser(authUser);
-        Todo todo = todoRepository.findById(todoId).orElseThrow(() ->
-                new InvalidRequestException("Todo not found"));
+    fun saveComment(authUser: AuthUser?, todoId: Long, commentSaveRequest: CommentSaveRequest): CommentSaveResponse {
+        val user = User.fromAuthUser(
+            authUser!!
+        )
+        val todo = todoRepository.findById(todoId).orElseThrow { InvalidRequestException("Todo not found") }
 
-        Comment newComment = new Comment(
-                commentSaveRequest.getContents(),
-                user,
-                todo
-        );
+        val newComment = Comment(
+            commentSaveRequest.contents,
+            user,
+            todo
+        )
 
-        Comment savedComment = commentRepository.save(newComment);
+        val savedComment = commentRepository.save(newComment)
 
-        return new CommentSaveResponse(
-                savedComment.getId(),
-                savedComment.getContents(),
-                new UserResponse(user.getId(), user.getEmail(), user.getNickname())
-        );
+        return CommentSaveResponse(
+            savedComment.id!!,
+            savedComment.contents,
+            UserResponse(user.id!!, user.email, user.nickname)
+        )
     }
 
-    public List<CommentResponse> getComments(long todoId) {
-        List<Comment> commentList = commentRepository.findByTodoIdWithUser(todoId);
+    fun getComments(todoId: Long): List<CommentResponse> {
+        val commentList = commentRepository.findByTodoIdWithUser(todoId)
 
-        List<CommentResponse> dtoList = new ArrayList<>();
-        for (Comment comment : commentList) {
-            User user = comment.getUser();
-            CommentResponse dto = new CommentResponse(
-                    comment.getId(),
-                    comment.getContents(),
-                    new UserResponse(user.getId(), user.getEmail(), user.getNickname())
-            );
-            dtoList.add(dto);
+        val dtoList: MutableList<CommentResponse> = ArrayList()
+        for (comment in commentList) {
+            val user = comment.user
+            val dto = CommentResponse(
+                comment.id!!,
+                comment.contents,
+                UserResponse(user.id!!, user.email, user.nickname)
+            )
+            dtoList.add(dto)
         }
-        return dtoList;
+        return dtoList
     }
 }

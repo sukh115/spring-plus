@@ -1,7 +1,3 @@
-package org.example.expert.domain.common.exception;
+package org.example.expert.domain.common.exception
 
-public class InvalidRequestException extends RuntimeException {
-    public InvalidRequestException(String message) {
-        super(message);
-    }
-}
+class InvalidRequestException(message: String?) : RuntimeException(message)
