@@ -75,7 +75,35 @@ public class TodoPartitionedQueryRepositoryImpl implements TodoPartitionedQueryR
                 .fetch();
     }
 
+    @Override
+    public List<Long> findTodosIds(String title, String nickname, LocalDateTime start, LocalDateTime end, Pageable pageable) {
+        QTodoPartitioned todo = QTodoPartitioned.todoPartitioned;
+        QUser user = QUser.user;
 
+        return queryFactory
+                .select(todo.id)
+                .from(todo)
+                .leftJoin(todo.user, user)
+                .where(
+                        containsTitle(title),
+                        containsNickname(nickname),
+                        betweenCreatedAt(start, end)
+                )
+                .orderBy(todo.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+    }
+
+    @Override
+    public List<TodoPartitioned> findTodosByIds(List<Long> ids) {
+        QTodoPartitioned todo = QTodoPartitioned.todoPartitioned;
+
+        return queryFactory
+                .selectFrom(todo)
+                .where(todo.id.in(ids))
+                .fetch();
+    }
 
 
     private BooleanExpression containsTitle(String title) {

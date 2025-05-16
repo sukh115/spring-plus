@@ -21,5 +21,5 @@ public class TodoSearchCondition {
     private LocalDateTime endDate;
 
     private int page = 1;
-    private int size = 10;
+    private int size = 1000;
 }

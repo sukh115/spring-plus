@@ -13,4 +13,7 @@ public interface TodoPartitionedQueryRepository {
 
     List<TodoPartitioned> findTodos(String title, String nickname, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
+    List<Long> findTodosIds(String title, String nickname, LocalDateTime start, LocalDateTime end, Pageable pageable);
+
+    List<TodoPartitioned> findTodosByIds(List<Long> ids);
 }

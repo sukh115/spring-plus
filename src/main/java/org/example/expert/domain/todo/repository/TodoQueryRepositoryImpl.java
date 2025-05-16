@@ -8,13 +8,13 @@ import org.example.expert.domain.comment.entity.QComment;
 import org.example.expert.domain.manager.entity.QManager;
 import org.example.expert.domain.todo.dto.request.TodoSearchCondition;
 import org.example.expert.domain.todo.dto.response.TodoSearchResponse;
+import org.example.expert.domain.todo.entity.QTodo;
 import org.example.expert.domain.todo.entity.Todo;
+import org.example.expert.domain.user.entity.QUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
-import org.example.expert.domain.todo.entity.QTodo;
-import org.example.expert.domain.user.entity.QUser;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class TodoQueryRepositoryImpl implements TodoQueryRepository{
+public class TodoQueryRepositoryImpl implements TodoQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
@@ -91,6 +91,7 @@ public class TodoQueryRepositoryImpl implements TodoQueryRepository{
     private BooleanExpression containsNickname(String nickname) {
         return StringUtils.hasText(nickname) ? QTodo.todo.user.nickname.contains(nickname) : null;
     }
+
     private BooleanExpression betweenCreatedAt(LocalDateTime start, LocalDateTime end) {
         if (start != null && end != null) {
             return QTodo.todo.createdAt.between(start, end);
